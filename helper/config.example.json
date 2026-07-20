@@ -1,0 +1,7 @@
+{
+    "latitude": 47.3769,
+    "longitude": 8.5417,
+    "output_path": "/var/lib/meteoswiss-hail-radar/status.json",
+    "collection_base_url": "https://data.geo.admin.ch/api/stac/v1",
+    "collection_id": "ch.meteoschweiz.ogd-radar-hail"
+}

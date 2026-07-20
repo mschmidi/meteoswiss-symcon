@@ -1,0 +1,13 @@
+{
+    "id": "{F5835CF7-CD09-4BA3-AE02-81AF794E18C0}",
+    "vendor": "mschmidi",
+    "url": "https://github.com/mschmidi/meteo-api",
+    "type": 3,
+    "implemented": [],
+    "parentRequirements": [],
+    "childRequirements": [],
+    "compatibility": {
+        "minimumRuntimeVersion": "6.0"
+    },
+    "prefix": "MSHR"
+}

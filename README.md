@@ -2,10 +2,17 @@
 
 IP-Symcon Integration für MeteoSchweiz-Daten.
 
-**Erster Schritt:** Ein Modul, das Hagel-/Gewitterwarnungen von MeteoSchweiz für eine
-konfigurierbare Postleitzahl abruft und als Variablen in IP-Symcon bereitstellt, damit
-darauf basierend Ereignisse (z. B. Markisen einfahren, Push-Benachrichtigung) ausgelöst
-werden können.
+**Erster Schritt:** Zwei Module, um Hagelgefahr in IP-Symcon abzubilden, damit
+darauf basierend Ereignisse (z. B. Markisen einfahren, Push-Benachrichtigung)
+ausgelöst werden können:
+
+- **[`MeteoSchweizHagelwarnung`](#modul-meteoschweizhagelwarnung):** Text-Warnungen
+  der MeteoSwiss-App (inoffizielle API, einfach, ohne zusätzliche Abhängigkeiten).
+- **[`MeteoSchweizHagelradar`](#modul-meteoschweizhagelradar):** Offizielle
+  Radardaten POH/MESHS (offizielle Open-Data-API, benötigt einen zusätzlichen
+  Python-Helper, siehe [Installationsanleitung](docs/hagelradar-installation.md)).
+
+Beide Module können unabhängig voneinander oder zusammen betrieben werden.
 
 ## Modul: MeteoSchweizHagelwarnung
 
@@ -21,10 +28,9 @@ Gewitterwarnung aus und prüft optional, ob im Warntext explizit "Hagel" erwähn
 > bekannt (u. a. genutzt in den Open-Source-Projekten
 > [`swiss_meteo_warnings`](https://github.com/marquisolivier/swiss_meteo_warnings) für
 > Home Assistant und [`ioBroker.meteoswiss`](https://github.com/deMynchi/ioBroker.meteoswiss)).
-> Es gibt keine Garantie für Stabilität oder Verfügbarkeit dieser Schnittstelle. Sobald
-> MeteoSchweiz eine offizielle Open-Data-Schnittstelle für Warnungen veröffentlicht
-> (aktuell laut [opendatadocs.meteoswiss.ch](https://opendatadocs.meteoswiss.ch/) in
-> Vorbereitung), sollte das Modul darauf umgestellt werden.
+> Es gibt keine Garantie für Stabilität oder Verfügbarkeit dieser Schnittstelle. Für
+> belastbare Werte siehe das Modul `MeteoSchweizHagelradar` unten, das die offizielle
+> Datenquelle nutzt.
 
 ### Erzeugte Variablen
 
@@ -54,7 +60,48 @@ Gewitterwarnung aus und prüft optional, ob im Warntext explizit "Hagel" erwähn
 3. Neue Instanz unter dem gewünschten Kategorie-Knoten anlegen und PLZ konfigurieren.
 4. Auf Basis der Variable `HagelAktiv` bzw. `Warnstufe` ein IP-Symcon-Ereignis erstellen.
 
-### Geplante nächste Schritte
+## Modul: MeteoSchweizHagelradar
+
+### Funktionsweise
+
+Nutzt die **offizielle** MeteoSchweiz Open-Data-Quelle für Hagel: die Radarprodukte
+[POH und MESHS](https://opendatadocs.meteoswiss.ch/d-radar-data/d3-hail-radar-products)
+(`ch.meteoschweiz.ogd-radar-hail`), abgerufen über die FSDI-STAC-API
+(`data.geo.admin.ch`). POH gibt die Hagelwahrscheinlichkeit (0–100 %) pro
+Radarpixel an, MESHS die erwartete maximale Hagelkorngrösse (mm). Beide werden
+nur zwischen 1. April und 30. September berechnet und alle 5 Minuten
+aktualisiert.
+
+Die Rohdaten liegen als Raster im HDF5-Format (ODIM-Standard) vor – PHP kann
+das nicht nativ lesen. Ein separates Python-Skript (`helper/`) läuft auf
+demselben Raspberry Pi als systemd-Timer, lädt die aktuellste Datei, liest den
+Pixelwert an der konfigurierten Koordinate aus und schreibt das Ergebnis in
+eine lokale JSON-Datei. Das IP-Symcon-Modul liest ausschliesslich diese Datei
+– es braucht selbst keinen HDF5-Zugriff.
+
+**Vollständige Installationsanleitung (Helper + Modul):**
+[docs/hagelradar-installation.md](docs/hagelradar-installation.md)
+
+### Erzeugte Variablen
+
+| Ident              | Beschreibung                                                  |
+|---------------------|------------------------------------------------------------------|
+| `POH`               | Hagelwahrscheinlichkeit am konfigurierten Standort (%)          |
+| `MESHS`             | Erwartete maximale Hagelkorngrösse am Standort (mm)              |
+| `HagelGefahr`       | `true`, wenn POH oder MESHS über dem konfigurierten Schwellenwert liegt und die Daten aktuell sind |
+| `Datenzeitstempel`  | Zeitpunkt der zugrunde liegenden Radardaten                      |
+| `SaisonAktiv`       | `true` zwischen April und September (ausserhalb: keine Daten)    |
+| `LetzterFehler`     | Letzte Fehlermeldung des Helper-Skripts, falls vorhanden          |
+
+### Konfiguration
+
+- **Pfad zur status.json:** Ausgabedatei des Python-Helpers.
+- **Aktualisierungsintervall:** Wie oft das Modul die Datei neu einliest.
+- **Schwellenwerte POH/MESHS:** Ab wann `HagelGefahr` gesetzt wird.
+- **Max. Alter:** Ab wann Daten als veraltet gelten (z. B. wenn der Helper
+  ausfällt) und `HagelGefahr` sicherheitshalber nicht mehr gesetzt wird.
+
+## Geplante nächste Schritte
 
 - Weitere Warntypen (Wind, Regen, Schnee, Glatteis) als eigene Instanzen/Variablen.
-- Offizielle MeteoSchweiz Open-Data-Schnittstelle nutzen, sobald verfügbar.
+- WebFront-Visualisierung der Hagelradar-Daten.
