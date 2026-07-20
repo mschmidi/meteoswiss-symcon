@@ -1,0 +1,52 @@
+{
+    "elements": [
+        {
+            "type": "NumberSpinner",
+            "name": "PLZ",
+            "caption": "Postleitzahl (PLZ)",
+            "minimum": 1000,
+            "maximum": 9999
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "UpdateInterval",
+            "caption": "Aktualisierungsintervall",
+            "minimum": 1,
+            "suffix": " Minuten"
+        },
+        {
+            "type": "CheckBox",
+            "name": "NurBeiHagelErwaehnung",
+            "caption": "Nur als Hagelwarnung werten, wenn \"Hagel\" im Warntext erwähnt wird (sonst jede Gewitterwarnung)"
+        }
+    ],
+    "actions": [
+        {
+            "type": "Button",
+            "caption": "Jetzt aktualisieren",
+            "onClick": "MSH_UpdateWarnung($id);"
+        }
+    ],
+    "status": [
+        {
+            "code": 102,
+            "icon": "active",
+            "caption": "Aktiv"
+        },
+        {
+            "code": 104,
+            "icon": "inactive",
+            "caption": "Inaktiv"
+        },
+        {
+            "code": 201,
+            "icon": "error",
+            "caption": "Ungültige Postleitzahl"
+        },
+        {
+            "code": 202,
+            "icon": "error",
+            "caption": "Fehler beim Abrufen der Warndaten"
+        }
+    ]
+}

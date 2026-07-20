@@ -1,0 +1,10 @@
+{
+    "id": "{565F90CC-B0C3-4709-94D6-28D324513452}",
+    "name": "MeteoSchweiz Integration",
+    "author": "mschmidi",
+    "url": "https://github.com/mschmidi/meteo-api",
+    "description": "IP-Symcon Integration für MeteoSchweiz-Daten. Erster Schritt: Hagel-/Gewitterwarnungen pro Postleitzahl.",
+    "version": "1.0",
+    "build": 1,
+    "date": 1784505600
+}
