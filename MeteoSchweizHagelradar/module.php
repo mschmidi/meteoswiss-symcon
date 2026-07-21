@@ -4,10 +4,17 @@ declare(strict_types=1);
 
 class MeteoSchweizHagelradar extends IPSModule
 {
+    private const DEFAULT_HELPER_CONFIG_PATH = '/etc/meteoswiss-hail-radar/config.json';
+
     public function Create()
     {
         parent::Create();
 
+        [$defaultLat, $defaultLon] = $this->LiesSystemStandort() ?? [0.0, 0.0];
+
+        $this->RegisterPropertyFloat('Latitude', $defaultLat);
+        $this->RegisterPropertyFloat('Longitude', $defaultLon);
+        $this->RegisterPropertyString('HelperConfigFilePath', self::DEFAULT_HELPER_CONFIG_PATH);
         $this->RegisterPropertyString('StatusFilePath', '/var/lib/meteoswiss-hail-radar/status.json');
         $this->RegisterPropertyInteger('UpdateInterval', 5);
         $this->RegisterPropertyInteger('POHSchwellenwert', 50);
@@ -36,13 +43,44 @@ class MeteoSchweizHagelradar extends IPSModule
         $this->RegisterVariableBoolean('SaisonAktiv', 'Hagelsaison aktiv (April-September)', '', 50);
         $this->RegisterVariableString('LetzterFehler', 'Letzter Fehler des Helper-Skripts', '', 60);
 
+        $lat = $this->ReadPropertyFloat('Latitude');
+        $lon = $this->ReadPropertyFloat('Longitude');
+
+        if ($lat === 0.0 && $lon === 0.0) {
+            $this->SetTimerInterval('UpdateTimer', 0);
+            $this->SetStatus(205);
+            return;
+        }
+
         $interval = max(1, $this->ReadPropertyInteger('UpdateInterval'));
         $this->SetTimerInterval('UpdateTimer', $interval * 60 * 1000);
-        $this->SetStatus(102);
+
+        if (!$this->SchreibeHelperKonfiguration($lat, $lon)) {
+            $this->SetStatus(206);
+        } else {
+            $this->SetStatus(102);
+        }
 
         if (IPS_GetKernelRunlevel() === KR_READY) {
             $this->UpdateWarnung();
         }
+    }
+
+    // Erlaubt es, den in IP-Symcon hinterlegten Systemstandort (z. B. bereits
+    // fuer Sonnenauf-/-untergang gesetzt) jederzeit manuell als Standort fuer
+    // dieses Modul zu uebernehmen, ohne Koordinaten von Hand eintippen zu muessen.
+    public function StandortUebernehmen(): void
+    {
+        $standort = $this->LiesSystemStandort();
+        if ($standort === null) {
+            $this->LogMessage('MeteoSchweizHagelradar: IP-Symcon-Systemstandort konnte nicht gelesen werden.', KL_WARNING);
+            return;
+        }
+
+        [$lat, $lon] = $standort;
+        IPS_SetProperty($this->InstanceID, 'Latitude', $lat);
+        IPS_SetProperty($this->InstanceID, 'Longitude', $lon);
+        IPS_ApplyChanges($this->InstanceID);
     }
 
     public function UpdateWarnung(): void
@@ -91,5 +129,65 @@ class MeteoSchweizHagelradar extends IPSModule
         } else {
             $this->SetStatus(102);
         }
+    }
+
+    // Schreibt Standort und Ausgabepfad in die Konfigurationsdatei des
+    // Python-Helpers, damit der Standort ausschliesslich in IP-Symcon
+    // gepflegt werden muss und nie von Hand auf dem Host editiert werden muss.
+    // Das Zielverzeichnis muss dafuer einmalig (siehe Installationsanleitung)
+    // fuer den IP-Symcon-Prozess beschreibbar gemacht werden.
+    private function SchreibeHelperKonfiguration(float $lat, float $lon): bool
+    {
+        $konfigPfad = $this->ReadPropertyString('HelperConfigFilePath');
+        $verzeichnis = dirname($konfigPfad);
+
+        if (!is_dir($verzeichnis) || !is_writable($verzeichnis)) {
+            $this->LogMessage("MeteoSchweizHagelradar: Verzeichnis '$verzeichnis' existiert nicht oder ist für IP-Symcon nicht beschreibbar. Siehe Installationsanleitung.", KL_WARNING);
+            return false;
+        }
+
+        $konfiguration = [
+            'latitude'    => $lat,
+            'longitude'   => $lon,
+            'output_path' => $this->ReadPropertyString('StatusFilePath'),
+        ];
+
+        $tmpPfad = $konfigPfad . '.tmp';
+        $json = json_encode($konfiguration, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        if ($json === false || @file_put_contents($tmpPfad, $json) === false) {
+            $this->LogMessage("MeteoSchweizHagelradar: Konnte '$tmpPfad' nicht schreiben.", KL_WARNING);
+            return false;
+        }
+        @chmod($tmpPfad, 0644);
+
+        if (!@rename($tmpPfad, $konfigPfad)) {
+            $this->LogMessage("MeteoSchweizHagelradar: Konnte '$tmpPfad' nicht nach '$konfigPfad' verschieben.", KL_WARNING);
+            @unlink($tmpPfad);
+            return false;
+        }
+
+        return true;
+    }
+
+    /** @return array{0: float, 1: float}|null */
+    private function LiesSystemStandort(): ?array
+    {
+        if (!function_exists('IPS_GetSystemLocation')) {
+            return null;
+        }
+
+        $json = @IPS_GetSystemLocation();
+        $daten = is_string($json) ? json_decode($json, true) : null;
+        if (!is_array($daten) || !isset($daten['latitude'], $daten['longitude'])) {
+            return null;
+        }
+
+        $lat = (float) $daten['latitude'];
+        $lon = (float) $daten['longitude'];
+        if ($lat === 0.0 && $lon === 0.0) {
+            return null;
+        }
+
+        return [$lat, $lon];
     }
 }

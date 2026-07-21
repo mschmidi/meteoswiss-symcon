@@ -105,6 +105,12 @@ Pixelwert an der konfigurierten Koordinate aus und schreibt das Ergebnis in
 eine lokale JSON-Datei. Das IP-Symcon-Modul liest ausschliesslich diese Datei
 – es braucht selbst keinen HDF5-Zugriff.
 
+Der Standort wird ausschliesslich in IP-Symcon gepflegt (Latitude/Longitude,
+automatisch aus dem IP-Symcon-Systemstandort vorausgefüllt): Das Modul
+schreibt die Koordinaten beim Speichern selbst in die Konfigurationsdatei des
+Helpers. Nach der einmaligen Grundinstallation (siehe unten) muss auf dem Pi
+keine Datei mehr von Hand editiert werden.
+
 **Vollständige Installationsanleitung (Helper + Modul):**
 [docs/hagelradar-installation.md](docs/hagelradar-installation.md)
 
@@ -121,11 +127,14 @@ eine lokale JSON-Datei. Das IP-Symcon-Modul liest ausschliesslich diese Datei
 
 ### Konfiguration
 
-- **Pfad zur status.json:** Ausgabedatei des Python-Helpers.
-- **Aktualisierungsintervall:** Wie oft das Modul die Datei neu einliest.
+- **Latitude/Longitude:** Standort, wird an den Helper weitergereicht (Button
+  "Standort aus IP-Symcon übernehmen" oder manuell).
+- **Aktualisierungsintervall:** Wie oft das Modul die Statusdatei neu einliest.
 - **Schwellenwerte POH/MESHS:** Ab wann `HagelGefahr` gesetzt wird.
 - **Max. Alter:** Ab wann Daten als veraltet gelten (z. B. wenn der Helper
   ausfällt) und `HagelGefahr` sicherheitshalber nicht mehr gesetzt wird.
+- **Erweitert:** Pfade zur Helper-Konfiguration (wird geschrieben) und zur
+  `status.json` (wird gelesen) – nur bei abweichender Installation ändern.
 
 ## Geplante nächste Schritte
 

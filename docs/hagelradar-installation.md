@@ -51,28 +51,34 @@ sudo cp helper/meteoswiss_hail_radar.py /opt/meteoswiss-hail-radar/
 sudo chown -R meteoswiss-hail:meteoswiss-hail /opt/meteoswiss-hail-radar
 ```
 
-## 4. Konfiguration anlegen
+## 4. Konfigurationsverzeichnis anlegen
+
+Standort und Ausgabepfad müssen **nicht von Hand** in eine Datei eingetragen
+werden: Das IP-Symcon-Modul schreibt `config.json` in Schritt 8 selbst, sobald
+dort Latitude/Longitude gesetzt sind. Dafür muss das Verzeichnis lediglich
+einmalig angelegt und für IP-Symcon beschreibbar gemacht werden – welcher
+Systembenutzer das im Detail ist, unterscheidet sich je nach Installation
+(z. B. `root` beim offiziellen Symcon-Image). Am einfachsten für eine
+Einzelbenutzer-Installation auf dem eigenen Pi:
 
 ```bash
 sudo mkdir -p /etc/meteoswiss-hail-radar
-sudo cp helper/config.example.json /etc/meteoswiss-hail-radar/config.json
-sudo nano /etc/meteoswiss-hail-radar/config.json
+sudo chmod 777 /etc/meteoswiss-hail-radar
 ```
 
-Mindestens `latitude` und `longitude` (WGS84, z. B. aus Google Maps oder den
-IP-Symcon Systemstandort-Einstellungen) auf den gewünschten Standort
-anpassen:
+Wer striktere Rechte bevorzugt: Den tatsächlichen Benutzer des laufenden
+IP-Symcon-Prozesses ermitteln (z. B. `ps -eo user,comm | grep -i symcon`) und
+das Verzeichnis stattdessen diesem Benutzer bzw. einer gemeinsamen Gruppe mit
+`meteoswiss-hail` zuordnen.
 
-```json
-{
-    "latitude": 47.3769,
-    "longitude": 8.5417,
-    "output_path": "/var/lib/meteoswiss-hail-radar/status.json"
-}
-```
+Zum Testen des Helpers unabhängig von IP-Symcon (optional, siehe Schritt 6)
+kann `config.json` auch manuell aus der Vorlage erzeugt werden – sie wird
+sobald das IP-Symcon-Modul einmal angewendet wurde ohnehin automatisch
+überschrieben:
 
 ```bash
-sudo chown -R meteoswiss-hail:meteoswiss-hail /etc/meteoswiss-hail-radar
+sudo cp helper/config.example.json /etc/meteoswiss-hail-radar/config.json
+sudo chown meteoswiss-hail:meteoswiss-hail /etc/meteoswiss-hail-radar/config.json
 ```
 
 ## 5. Ausgabeverzeichnis anlegen
@@ -135,10 +141,16 @@ von POH/MESHS).
    Store** → **Meine eigenen Module** die Repository-URL hinzufügen:
    `https://github.com/mschmidi/meteo-api`
 2. Modul **MeteoSchweizHagelradar** installieren.
-3. Neue Instanz anlegen. Konfiguration:
-   - **Pfad zur status.json**: `/var/lib/meteoswiss-hail-radar/status.json`
-     (Standardwert, nur ändern falls in Schritt 4 ein anderer `output_path`
-     gewählt wurde)
+3. Neue Instanz anlegen. **Latitude/Longitude** werden beim Anlegen
+   automatisch aus dem IP-Symcon-Systemstandort übernommen, falls dieser
+   konfiguriert ist (Einstellungen → System → Standort). Falls nicht, oder um
+   ihn zu aktualisieren: Button **"Standort aus IP-Symcon übernehmen"**
+   klicken, oder die Koordinaten manuell eintragen.
+4. Beim Speichern (Übernehmen) schreibt das Modul Standort und Ausgabepfad
+   automatisch in die in Schritt 4 vorbereitete `config.json` des Helpers –
+   das ist der einzige Punkt, an dem diese Datei berührt wird, und geschieht
+   ab hier vollständig aus IP-Symcon heraus.
+5. Weitere Konfiguration:
    - **Aktualisierungsintervall**: 5 Minuten (muss nicht kleiner sein als
      der systemd-Timer, da sonst nur alte Werte erneut gelesen werden)
    - **Schwellenwerte** für POH (%) und MESHS (mm), ab denen die Variable
@@ -146,7 +158,10 @@ von POH/MESHS).
    - **Daten gelten als veraltet nach**: Sicherheitsnetz, falls der
      systemd-Timer/Helper ausfällt – dann wird `HagelGefahr` automatisch
      nicht mehr gesetzt und der Instanzstatus zeigt einen Fehler
-4. Auf Basis der Variable `HagelGefahr` (oder direkt `POH`/`MESHS` mit
+   - Unter **Erweitert**: Pfade zur Helper-Konfiguration und zur
+     `status.json`, nur bei abweichender Installation (z. B. Schritt 4/5
+     angepasst) ändern
+6. Auf Basis der Variable `HagelGefahr` (oder direkt `POH`/`MESHS` mit
    eigener Logik) ein IP-Symcon-Ereignis erstellen.
 
 ## Fehlersuche
@@ -182,6 +197,18 @@ sudo -u meteoswiss-hail /opt/meteoswiss-hail-radar/venv/bin/python3 \
 Die Ausgabe zeigt alle Gruppen, Datasets und Attribute der Datei. Mit diesen
 Informationen lässt sich `read_pixel_value()` in
 `meteoswiss_hail_radar.py` entsprechend anpassen.
+
+**IP-Symcon zeigt Status "Standort nicht konfiguriert"**
+→ Latitude/Longitude sind noch `0.0`/`0.0`. IP-Symcon-Systemstandort setzen
+(Einstellungen → System → Standort) und Button "Standort aus IP-Symcon
+übernehmen" klicken, oder die Koordinaten direkt in der Instanz eintragen.
+
+**IP-Symcon zeigt Status "Helper-Konfiguration konnte nicht geschrieben werden"**
+→ Das in Schritt 4 vorbereitete Verzeichnis (Standard
+`/etc/meteoswiss-hail-radar`) ist für den IP-Symcon-Prozess nicht
+beschreibbar. Rechte prüfen (`ls -ld /etc/meteoswiss-hail-radar`) und ggf.
+`sudo chmod 777 /etc/meteoswiss-hail-radar` erneut ausführen. Details stehen
+im IP-Symcon-Meldungsfenster.
 
 **Keine Werte zwischen Oktober und März**
 → Erwartetes Verhalten: POH/MESHS werden laut MeteoSchweiz nur zwischen
