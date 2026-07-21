@@ -1,0 +1,10 @@
+[Unit]
+Description=MeteoSchweiz Hagelradar (POH/MESHS) Abruf
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=meteoswiss-hail
+Group=meteoswiss-hail
+ExecStart=/opt/meteoswiss-hail-radar/venv/bin/python3 /opt/meteoswiss-hail-radar/meteoswiss_hail_radar.py --config /etc/meteoswiss-hail-radar/config.json

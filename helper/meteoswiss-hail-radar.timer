@@ -1,0 +1,11 @@
+[Unit]
+Description=Startet den MeteoSchweiz-Hagelradar-Abruf alle 5 Minuten
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=5min
+AccuracySec=30sec
+Persistent=true
+
+[Install]
+WantedBy=timers.target

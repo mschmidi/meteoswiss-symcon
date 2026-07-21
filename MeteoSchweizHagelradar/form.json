@@ -1,0 +1,124 @@
+{
+    "elements": [
+        {
+            "type": "Label",
+            "caption": "Standort (wird beim Anlegen der Instanz automatisch aus dem IP-Symcon-Systemstandort übernommen, falls dort konfiguriert)"
+        },
+        {
+            "type": "RowLayout",
+            "items": [
+                {
+                    "type": "NumberSpinner",
+                    "name": "Latitude",
+                    "caption": "Breitengrad (Latitude)",
+                    "minimum": 45,
+                    "maximum": 48,
+                    "digits": 6
+                },
+                {
+                    "type": "NumberSpinner",
+                    "name": "Longitude",
+                    "caption": "Längengrad (Longitude)",
+                    "minimum": 5,
+                    "maximum": 11,
+                    "digits": 6
+                }
+            ]
+        },
+        {
+            "type": "Button",
+            "caption": "Standort aus IP-Symcon übernehmen",
+            "onClick": "MSHR_StandortUebernehmen($id);"
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "UpdateInterval",
+            "caption": "Aktualisierungsintervall",
+            "minimum": 1,
+            "suffix": " Minuten"
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "POHSchwellenwert",
+            "caption": "Schwellenwert Hagelwahrscheinlichkeit (POH)",
+            "minimum": 0,
+            "maximum": 100,
+            "suffix": " %"
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "MESHSSchwellenwert",
+            "caption": "Schwellenwert erwartete Hagelkorngrösse (MESHS)",
+            "minimum": 0,
+            "digits": 1,
+            "suffix": " mm"
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "MaxAlterMinuten",
+            "caption": "Daten gelten als veraltet nach",
+            "minimum": 5,
+            "suffix": " Minuten"
+        },
+        {
+            "type": "ExpansionPanel",
+            "caption": "Erweitert",
+            "items": [
+                {
+                    "type": "ValidationTextBox",
+                    "name": "HelperConfigFilePath",
+                    "caption": "Pfad zur Konfigurationsdatei des Helper-Skripts (wird von diesem Modul geschrieben)"
+                },
+                {
+                    "type": "ValidationTextBox",
+                    "name": "StatusFilePath",
+                    "caption": "Pfad zur status.json des Helper-Skripts (wird von diesem Modul gelesen)"
+                }
+            ]
+        }
+    ],
+    "actions": [
+        {
+            "type": "Button",
+            "caption": "Jetzt aktualisieren",
+            "onClick": "MSHR_UpdateWarnung($id);"
+        }
+    ],
+    "status": [
+        {
+            "code": 102,
+            "icon": "active",
+            "caption": "Aktiv"
+        },
+        {
+            "code": 104,
+            "icon": "inactive",
+            "caption": "Inaktiv"
+        },
+        {
+            "code": 202,
+            "icon": "error",
+            "caption": "Statusdatei nicht lesbar oder ungültig"
+        },
+        {
+            "code": 203,
+            "icon": "error",
+            "caption": "Daten des Helper-Skripts sind veraltet"
+        },
+        {
+            "code": 204,
+            "icon": "error",
+            "caption": "Helper-Skript meldet einen Fehler (siehe LetzterFehler)"
+        },
+        {
+            "code": 205,
+            "icon": "error",
+            "caption": "Standort nicht konfiguriert (Latitude/Longitude)"
+        },
+        {
+            "code": 206,
+            "icon": "error",
+            "caption": "Helper-Konfiguration konnte nicht geschrieben werden (siehe Meldungen)"
+        }
+    ]
+}

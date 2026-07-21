@@ -1,0 +1,54 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Lint PHP module files
+        run: |
+          status=0
+          for file in $(find . -name '*.php' -not -path './.git/*'); do
+            php -l "$file" || status=1
+          done
+          exit $status
+
+      - name: Validate JSON files
+        run: |
+          status=0
+          for file in $(find . -name '*.json' -not -path './.git/*'); do
+            python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$file" || { echo "Invalid JSON: $file"; status=1; }
+          done
+          exit $status
+
+      - name: Check Python helper syntax
+        run: python3 -m py_compile helper/meteoswiss_hail_radar.py
+
+      - name: Check required module files exist
+        run: |
+          status=0
+          for dir in MeteoSchweizHagelwarnung MeteoSchweizHagelradar; do
+            for file in module.json module.php form.json README.md; do
+              if [ ! -f "$dir/$file" ]; then
+                echo "Missing $dir/$file"
+                status=1
+              fi
+            done
+          done
+          exit $status
