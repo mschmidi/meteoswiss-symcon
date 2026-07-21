@@ -75,8 +75,8 @@ class MeteoSchweizHagelwarnung extends IPSModule
         }
 
         $gewitterWarnungen = array_values(array_filter($warnings, function ($warnung) {
-            return ($warnung['warnType'] ?? null) === self::WARNTYP_GEWITTER
-                && ($warnung['warnLevel'] ?? 0) > 0;
+            return isset($warnung['warnType']) && (int) $warnung['warnType'] === self::WARNTYP_GEWITTER
+                && (int) ($warnung['warnLevel'] ?? 0) > 0;
         }));
 
         usort($gewitterWarnungen, function ($a, $b) {

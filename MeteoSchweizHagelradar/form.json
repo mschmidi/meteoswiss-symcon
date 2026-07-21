@@ -63,6 +63,11 @@
             "code": 203,
             "icon": "error",
             "caption": "Daten des Helper-Skripts sind veraltet"
+        },
+        {
+            "code": 204,
+            "icon": "error",
+            "caption": "Helper-Skript meldet einen Fehler (siehe LetzterFehler)"
         }
     ]
 }

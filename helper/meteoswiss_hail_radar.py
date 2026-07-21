@@ -147,7 +147,13 @@ def find_latest_asset(session: requests.Session, base_url: str, collection_id: s
     params = {'datetime': f'{start}/{end}', 'limit': 10}
 
     best = None
-    while url:
+    # Items sind auf ein rollierendes 14-Tage-Fenster begrenzt; mehr als eine
+    # Handvoll Seiten fuer einen 2-Tage-Zeitraum waeren ein Hinweis auf eine
+    # fehlerhafte "next"-Verlinkung der API - Obergrenze als Schutz vor einer
+    # Endlosschleife.
+    for _ in range(10):
+        if not url:
+            break
         response = session.get(url, params=params, timeout=20)
         response.raise_for_status()
         payload = response.json()

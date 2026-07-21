@@ -25,8 +25,12 @@ class MeteoSchweizHagelradar extends IPSModule
         IPS_SetVariableProfileValues('MSHR.Prozent', 0, 100, 1);
         IPS_SetVariableProfileDigits('MSHR.Prozent', 1);
 
+        $this->RegisterProfileFloatEx('MSHR.Millimeter', '', '', ' mm', []);
+        IPS_SetVariableProfileValues('MSHR.Millimeter', 0, 0, 1);
+        IPS_SetVariableProfileDigits('MSHR.Millimeter', 1);
+
         $this->RegisterVariableFloat('POH', 'Hagelwahrscheinlichkeit (POH)', 'MSHR.Prozent', 10);
-        $this->RegisterVariableFloat('MESHS', 'Erwartete Hagelkorngrösse (MESHS)', '', 20);
+        $this->RegisterVariableFloat('MESHS', 'Erwartete Hagelkorngrösse (MESHS)', 'MSHR.Millimeter', 20);
         $this->RegisterVariableBoolean('HagelGefahr', 'Hagelgefahr (Schwellenwert überschritten)', '~Alert', 30);
         $this->RegisterVariableInteger('Datenzeitstempel', 'Zeitstempel der Radardaten', '~UnixTimestamp', 40);
         $this->RegisterVariableBoolean('SaisonAktiv', 'Hagelsaison aktiv (April-September)', '', 50);
@@ -67,8 +71,8 @@ class MeteoSchweizHagelradar extends IPSModule
         $maxAlterSekunden = $this->ReadPropertyInteger('MaxAlterMinuten') * 60;
         $istAktuell = $generatedAt !== false && (time() - $generatedAt) <= $maxAlterSekunden;
 
-        $poh = isset($daten['poh_percent']) ? $daten['poh_percent'] : null;
-        $meshs = isset($daten['meshs_mm']) ? $daten['meshs_mm'] : null;
+        $poh = $daten['poh_percent'] ?? null;
+        $meshs = $daten['meshs_mm'] ?? null;
 
         $this->SetValue('POH', $poh !== null ? (float) $poh : 0.0);
         $this->SetValue('MESHS', $meshs !== null ? (float) $meshs : 0.0);
@@ -80,6 +84,12 @@ class MeteoSchweizHagelradar extends IPSModule
             && (($poh !== null && $poh >= $pohSchwelle) || ($meshs !== null && $meshs >= $meshsSchwelle));
         $this->SetValue('HagelGefahr', $gefahr);
 
-        $this->SetStatus($istAktuell ? 102 : 203);
+        if (!empty($daten['last_error'])) {
+            $this->SetStatus(204);
+        } elseif (!$istAktuell) {
+            $this->SetStatus(203);
+        } else {
+            $this->SetStatus(102);
+        }
     }
 }

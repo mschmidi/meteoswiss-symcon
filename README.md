@@ -13,6 +13,32 @@ ausgelöst werden können:
   Python-Helper, siehe [Installationsanleitung](docs/hagelradar-installation.md)).
 
 Beide Module können unabhängig voneinander oder zusammen betrieben werden.
+Lizenziert unter der [MIT-Lizenz](LICENSE). Eine [GitHub-Action](.github/workflows/validate.yml)
+prüft PHP-/JSON-Syntax und die Modulstruktur bei jedem Push.
+
+## Eignung für den offiziellen IP-Symcon Module Store
+
+Nur **`MeteoSchweizHagelwarnung`** ist für eine Einreichung im offiziellen
+Module Store (Stable-Kanal) geeignet: reines PHP, keine externen
+Abhängigkeiten, Installation in einem Schritt.
+
+**`MeteoSchweizHagelradar`** ist bewusst **nicht** für den Stable-Kanal
+vorgesehen:
+
+- Laut Symcon-Dokumentation prüft der Review-Prozess gezielt, ob ein Modul
+  lokale Dateien liest/verändert – dieses Modul liest zwingend eine
+  Statusdatei von einem administrator-konfigurierten Pfad.
+- Es funktioniert nicht ohne den separat zu installierenden Python-Helper
+  (Systembenutzer, apt-Pakete, systemd-Timer) – das widerspricht einer
+  "in einem Schritt installierbaren" Store-Erfahrung.
+
+Es lässt sich weiterhin über **Modules → Module Store → Meine eigenen Module**
+(eigene Repository-URL) nutzen – nur eben nicht im kuratierten, öffentlichen
+Stable-Store. Diese Einschätzung basiert auf öffentlich zugänglicher
+Symcon-Dokumentation zu den Store-Review-Kriterien; die aktuelle
+Einreichungsseite (`symcon.de/.../store/einreichen/`) war aus der
+Entwicklungsumgebung dieses Projekts nicht erreichbar (Netzwerkrestriktion) –
+vor der Einreichung dort selbst die aktuellen Kriterien gegenprüfen.
 
 ## Modul: MeteoSchweizHagelwarnung
 
