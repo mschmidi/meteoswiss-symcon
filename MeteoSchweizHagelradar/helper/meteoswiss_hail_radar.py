@@ -27,8 +27,12 @@ import tempfile
 import h5py
 import requests
 
+# Reale Dateinamen sind kleingeschrieben (z.B. "bzc261890000vl.845.h5") und
+# "KK" ist alphanumerisch (z.B. "vl"), nicht wie in der Doku angedeutet rein
+# numerisch - daher IGNORECASE und [A-Za-z0-9]{2} statt \d{2}.
 ASSET_RE = re.compile(
-    r'^(?P<code>BZC|MZC)(?P<yy>\d{2})(?P<jjj>\d{3})(?P<hhmm>\d{4})(?P<kk>\d{2})\.(?P<xyz>[^.]+)\.h5$'
+    r'^(?P<code>BZC|MZC)(?P<yy>\d{2})(?P<jjj>\d{3})(?P<hhmm>\d{4})(?P<kk>[A-Za-z0-9]{2})\.(?P<xyz>[^.]+)\.h5$',
+    re.IGNORECASE,
 )
 CODE_BY_PARAM = {'poh': 'BZC', 'meshs': 'MZC'}
 # Tagessummen (00:00-24:00 bzw. 06:00-06:00 UTC), keine 5-Minuten-Momentaufnahme.
@@ -164,7 +168,7 @@ def find_latest_asset(session: requests.Session, base_url: str, collection_id: s
                 if not href:
                     continue
                 match = ASSET_RE.match(os.path.basename(href))
-                if not match or match.group('code') != code:
+                if not match or match.group('code').upper() != code:
                     continue
                 if match.group('hhmm') in DAILY_SUM_HHMM:
                     continue
