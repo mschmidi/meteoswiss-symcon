@@ -1,13 +1,18 @@
 {
     "id": "{67C080D6-8D2A-4EC8-B92B-EBD0A56F681B}",
+    "name": "MeteoSchweizHagelwarnung",
     "vendor": "mschmidi",
     "url": "https://github.com/mschmidi/meteoswiss-symcon",
     "type": 3,
+    "aliases": [
+        "Hagelwarnung",
+        "Hagel",
+        "Gewitterwarnung",
+        "MeteoSchweiz",
+        "MeteoSwiss"
+    ],
     "implemented": [],
     "parentRequirements": [],
     "childRequirements": [],
-    "compatibility": {
-        "minimumRuntimeVersion": "6.0"
-    },
     "prefix": "MSH"
 }
