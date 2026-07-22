@@ -5,6 +5,8 @@ declare(strict_types=1);
 class MeteoSchweizHagelradar extends IPSModule
 {
     private const DEFAULT_HELPER_CONFIG_PATH = '/etc/meteoswiss-hail-radar/config.json';
+    // Kern-Instanz "Location Control", die den IP-Symcon-Systemstandort verwaltet.
+    private const LOCATION_CONTROL_MODULE_ID = '{45E97A63-F870-408A-B259-2933F7EABF74}';
 
     public function Create()
     {
@@ -178,11 +180,12 @@ class MeteoSchweizHagelradar extends IPSModule
     /** @return array{0: float, 1: float}|null */
     private function LiesSystemStandort(): ?array
     {
-        if (!function_exists('IPS_GetSystemLocation')) {
+        $instanzIDs = @IPS_GetInstanceListByModuleID(self::LOCATION_CONTROL_MODULE_ID);
+        if (!is_array($instanzIDs) || count($instanzIDs) === 0) {
             return null;
         }
 
-        $json = @IPS_GetSystemLocation();
+        $json = @IPS_GetProperty($instanzIDs[0], 'Location');
         $daten = is_string($json) ? json_decode($json, true) : null;
         if (!is_array($daten) || !isset($daten['latitude'], $daten['longitude'])) {
             return null;
