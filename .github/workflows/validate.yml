@@ -38,7 +38,7 @@ jobs:
           exit $status
 
       - name: Check Python helper syntax
-        run: python3 -m py_compile helper/meteoswiss_hail_radar.py
+        run: python3 -m py_compile MeteoSchweizHagelradar/helper/meteoswiss_hail_radar.py
 
       - name: Check required module files exist
         run: |
@@ -50,5 +50,20 @@ jobs:
                 status=1
               fi
             done
+          done
+          exit $status
+
+      - name: Check no stray top-level directories (Symcon Module Store treats every one as a module)
+        run: |
+          status=0
+          for dir in */; do
+            dir="${dir%/}"
+            case "$dir" in
+              MeteoSchweizHagelwarnung|MeteoSchweizHagelradar) ;;
+              *)
+                echo "Unexpected top-level directory '$dir' - IP-Symcon's Module Store scans every top-level folder and expects a module.json in it. Move it inside a module folder or remove it."
+                status=1
+                ;;
+            esac
           done
           exit $status

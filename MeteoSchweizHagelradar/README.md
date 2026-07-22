@@ -6,10 +6,10 @@ Standort und stellt sie als Variablen in IP-Symcon bereit.
 
 > **Kein eigenständig lauffähiges Modul:** Die Rohdaten sind HDF5-Raster, die
 > PHP nicht nativ lesen kann. Dieses Modul liest ausschliesslich eine lokale
-> JSON-Datei, die ein separates Python-Helper-Skript (`helper/` im
-> Repository-Root) schreibt. Ohne installierten und laufenden Helper liefert
-> das Modul keine Daten. Vollständige Installationsanleitung inkl. Helper:
-> [`../docs/hagelradar-installation.md`](../docs/hagelradar-installation.md)
+> JSON-Datei, die ein separates Python-Helper-Skript (`helper/` in diesem
+> Modulordner) schreibt. Ohne installierten und laufenden Helper liefert das
+> Modul keine Daten. Vollständige Installationsanleitung inkl. Helper:
+> [`INSTALLATION.md`](INSTALLATION.md)
 
 ## Voraussetzungen
 
@@ -25,7 +25,7 @@ Standort und stellt sie als Variablen in IP-Symcon bereit.
    die URL dieses Repositories hinzufügen:
    `https://github.com/mschmidi/meteo-api`
 2. Modul **MeteoSchweizHagelradar** installieren.
-3. Python-Helper gemäss [Installationsanleitung](../docs/hagelradar-installation.md)
+3. Python-Helper gemäss [Installationsanleitung](INSTALLATION.md)
    einrichten (inkl. beschreibbarem Konfigurationsverzeichnis, Schritt 4 dort).
 4. Neue Instanz anlegen. Latitude/Longitude werden automatisch aus dem
    IP-Symcon-Systemstandort übernommen, sonst über den Button "Standort aus
