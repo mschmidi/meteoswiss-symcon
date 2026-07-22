@@ -25,14 +25,15 @@ class MeteoSchweizHagelwarnung extends IPSModule
     {
         parent::ApplyChanges();
 
-        $this->RegisterProfileIntegerEx('MSH.Warnstufe', '', '', '', [
-            [0, 'Keine Warnung', '', -1],
-            [1, 'Minimal', '', 0x8BC34A],
-            [2, 'Mässig', '', 0xFFEB3B],
-            [3, 'Erheblich', '', 0xFF9800],
-            [4, 'Gross', '', 0xF44336],
-            [5, 'Sehr gross', '', 0x9C27B0],
-        ]);
+        if (!IPS_VariableProfileExists('MSH.Warnstufe')) {
+            IPS_CreateVariableProfile('MSH.Warnstufe', 1); // 1 = Integer
+        }
+        IPS_SetVariableProfileAssociation('MSH.Warnstufe', 0, 'Keine Warnung', '', -1);
+        IPS_SetVariableProfileAssociation('MSH.Warnstufe', 1, 'Minimal', '', 0x8BC34A);
+        IPS_SetVariableProfileAssociation('MSH.Warnstufe', 2, 'Mässig', '', 0xFFEB3B);
+        IPS_SetVariableProfileAssociation('MSH.Warnstufe', 3, 'Erheblich', '', 0xFF9800);
+        IPS_SetVariableProfileAssociation('MSH.Warnstufe', 4, 'Gross', '', 0xF44336);
+        IPS_SetVariableProfileAssociation('MSH.Warnstufe', 5, 'Sehr gross', '', 0x9C27B0);
 
         $this->RegisterVariableInteger('Warnstufe', 'Warnstufe (Gewitter/Hagel)', 'MSH.Warnstufe', 10);
         $this->RegisterVariableBoolean('HagelAktiv', 'Hagelwarnung aktiv', '~Alert', 20);
