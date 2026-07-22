@@ -28,11 +28,17 @@ class MeteoSchweizHagelradar extends IPSModule
     {
         parent::ApplyChanges();
 
-        $this->RegisterProfileFloatEx('MSHR.Prozent', '', '', ' %', []);
+        if (!IPS_VariableProfileExists('MSHR.Prozent')) {
+            IPS_CreateVariableProfile('MSHR.Prozent', 2); // 2 = Float
+        }
+        IPS_SetVariableProfileText('MSHR.Prozent', '', ' %');
         IPS_SetVariableProfileValues('MSHR.Prozent', 0, 100, 1);
         IPS_SetVariableProfileDigits('MSHR.Prozent', 1);
 
-        $this->RegisterProfileFloatEx('MSHR.Millimeter', '', '', ' mm', []);
+        if (!IPS_VariableProfileExists('MSHR.Millimeter')) {
+            IPS_CreateVariableProfile('MSHR.Millimeter', 2); // 2 = Float
+        }
+        IPS_SetVariableProfileText('MSHR.Millimeter', '', ' mm');
         IPS_SetVariableProfileValues('MSHR.Millimeter', 0, 0, 1);
         IPS_SetVariableProfileDigits('MSHR.Millimeter', 1);
 
