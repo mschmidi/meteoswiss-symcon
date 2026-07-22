@@ -4,7 +4,10 @@
     "author": "mschmidi",
     "url": "https://github.com/mschmidi/meteoswiss-symcon",
     "description": "IP-Symcon Integration für MeteoSchweiz-Daten. Erster Schritt: Hagel-/Gewitterwarnungen pro Postleitzahl.",
-    "version": "1.1",
-    "build": 2,
-    "date": 1784735075
+    "compatibility": {
+        "version": "6.0"
+    },
+    "version": "1.2",
+    "build": 3,
+    "date": 1784735695
 }
