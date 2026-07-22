@@ -38,7 +38,7 @@ DEFAULT_CONFIG_PATH = '/etc/meteoswiss-hail-radar/config.json'
 DEFAULT_OUTPUT_PATH = '/var/lib/meteoswiss-hail-radar/status.json'
 DEFAULT_COLLECTION_BASE_URL = 'https://data.geo.admin.ch/api/stac/v1'
 DEFAULT_COLLECTION_ID = 'ch.meteoschweiz.ogd-radar-hail'
-USER_AGENT = 'IP-Symcon-MeteoSchweizHagelradar/1.0 (+https://github.com/mschmidi/meteo-api)'
+USER_AGENT = 'IP-Symcon-MeteoSchweizHagelradar/1.0 (+https://github.com/mschmidi/meteoswiss-symcon)'
 
 log = logging.getLogger('meteoswiss_hail_radar')
 

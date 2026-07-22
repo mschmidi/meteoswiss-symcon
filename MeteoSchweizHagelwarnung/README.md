@@ -25,7 +25,7 @@ erwähnt wird.
 
 1. In IP-Symcon unter **Modules** → **Module Store** → **Meine eigenen Module**
    die URL dieses Repositories hinzufügen:
-   `https://github.com/mschmidi/meteo-api`
+   `https://github.com/mschmidi/meteoswiss-symcon`
 2. Modul **MeteoSchweizHagelwarnung** installieren.
 3. Neue Instanz unter dem gewünschten Kategorie-Knoten anlegen und PLZ
    konfigurieren.

@@ -23,7 +23,7 @@ Standort und stellt sie als Variablen in IP-Symcon bereit.
 
 1. In IP-Symcon unter **Modules** → **Module Store** → **Meine eigenen Module**
    die URL dieses Repositories hinzufügen:
-   `https://github.com/mschmidi/meteo-api`
+   `https://github.com/mschmidi/meteoswiss-symcon`
 2. Modul **MeteoSchweizHagelradar** installieren.
 3. Python-Helper gemäss [Installationsanleitung](INSTALLATION.md)
    einrichten (inkl. beschreibbarem Konfigurationsverzeichnis, Schritt 4 dort).
