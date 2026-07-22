@@ -44,10 +44,10 @@ sudo python3 -m venv --system-site-packages /opt/meteoswiss-hail-radar/venv
 
 ## 3. Skript installieren
 
-Repository auf den Pi klonen oder die Dateien aus `helper/` kopieren:
+Repository auf den Pi klonen oder die Dateien aus `MeteoSchweizHagelradar/helper/` kopieren:
 
 ```bash
-sudo cp helper/meteoswiss_hail_radar.py /opt/meteoswiss-hail-radar/
+sudo cp MeteoSchweizHagelradar/helper/meteoswiss_hail_radar.py /opt/meteoswiss-hail-radar/
 sudo chown -R meteoswiss-hail:meteoswiss-hail /opt/meteoswiss-hail-radar
 ```
 
@@ -77,7 +77,7 @@ sobald das IP-Symcon-Modul einmal angewendet wurde ohnehin automatisch
 überschrieben:
 
 ```bash
-sudo cp helper/config.example.json /etc/meteoswiss-hail-radar/config.json
+sudo cp MeteoSchweizHagelradar/helper/config.example.json /etc/meteoswiss-hail-radar/config.json
 sudo chown meteoswiss-hail:meteoswiss-hail /etc/meteoswiss-hail-radar/config.json
 ```
 
@@ -120,7 +120,7 @@ Falls `last_error` gesetzt ist oder die Ausgabe unerwartet aussieht: Abschnitt
 ## 7. systemd-Service und -Timer einrichten
 
 ```bash
-sudo cp helper/meteoswiss-hail-radar.service helper/meteoswiss-hail-radar.timer /etc/systemd/system/
+sudo cp MeteoSchweizHagelradar/helper/meteoswiss-hail-radar.service MeteoSchweizHagelradar/helper/meteoswiss-hail-radar.timer /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now meteoswiss-hail-radar.timer
 ```

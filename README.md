@@ -10,7 +10,7 @@ ausgelöst werden können:
   der MeteoSwiss-App (inoffizielle API, einfach, ohne zusätzliche Abhängigkeiten).
 - **[`MeteoSchweizHagelradar`](#modul-meteoschweizhagelradar):** Offizielle
   Radardaten POH/MESHS (offizielle Open-Data-API, benötigt einen zusätzlichen
-  Python-Helper, siehe [Installationsanleitung](docs/hagelradar-installation.md)).
+  Python-Helper, siehe [Installationsanleitung](MeteoSchweizHagelradar/INSTALLATION.md)).
 
 Beide Module können unabhängig voneinander oder zusammen betrieben werden.
 Lizenziert unter der [MIT-Lizenz](LICENSE). Eine [GitHub-Action](.github/workflows/validate.yml)
@@ -99,8 +99,9 @@ nur zwischen 1. April und 30. September berechnet und alle 5 Minuten
 aktualisiert.
 
 Die Rohdaten liegen als Raster im HDF5-Format (ODIM-Standard) vor – PHP kann
-das nicht nativ lesen. Ein separates Python-Skript (`helper/`) läuft auf
-demselben Raspberry Pi als systemd-Timer, lädt die aktuellste Datei, liest den
+das nicht nativ lesen. Ein separates Python-Skript
+(`MeteoSchweizHagelradar/helper/`) läuft auf demselben Raspberry Pi als
+systemd-Timer, lädt die aktuellste Datei, liest den
 Pixelwert an der konfigurierten Koordinate aus und schreibt das Ergebnis in
 eine lokale JSON-Datei. Das IP-Symcon-Modul liest ausschliesslich diese Datei
 – es braucht selbst keinen HDF5-Zugriff.
@@ -112,7 +113,7 @@ Helpers. Nach der einmaligen Grundinstallation (siehe unten) muss auf dem Pi
 keine Datei mehr von Hand editiert werden.
 
 **Vollständige Installationsanleitung (Helper + Modul):**
-[docs/hagelradar-installation.md](docs/hagelradar-installation.md)
+[MeteoSchweizHagelradar/INSTALLATION.md](MeteoSchweizHagelradar/INSTALLATION.md)
 
 ### Erzeugte Variablen
 
