@@ -139,7 +139,7 @@ von POH/MESHS).
 
 1. Falls noch nicht geschehen: In IP-Symcon unter **Modules** → **Module
    Store** → **Meine eigenen Module** die Repository-URL hinzufügen:
-   `https://github.com/mschmidi/meteo-api`
+   `https://github.com/mschmidi/meteoswiss-symcon`
 2. Modul **MeteoSchweizHagelradar** installieren.
 3. Neue Instanz anlegen. **Latitude/Longitude** werden beim Anlegen
    automatisch aus dem IP-Symcon-Systemstandort übernommen, falls dieser

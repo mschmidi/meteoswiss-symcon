@@ -81,7 +81,7 @@ Gewitterwarnung aus und prüft optional, ob im Warntext explizit "Hagel" erwähn
 ### Installation in IP-Symcon
 
 1. In IP-Symcon unter **Modules** → **Module Store** → **Meine eigenen Module** die URL
-   dieses Repositories hinzufügen: `https://github.com/mschmidi/meteo-api`
+   dieses Repositories hinzufügen: `https://github.com/mschmidi/meteoswiss-symcon`
 2. Modul **MeteoSchweizHagelwarnung** installieren.
 3. Neue Instanz unter dem gewünschten Kategorie-Knoten anlegen und PLZ konfigurieren.
 4. Auf Basis der Variable `HagelAktiv` bzw. `Warnstufe` ein IP-Symcon-Ereignis erstellen.
