@@ -44,12 +44,49 @@ sudo python3 -m venv --system-site-packages /opt/meteoswiss-hail-radar/venv
 
 ## 3. Skript installieren
 
-Repository auf den Pi klonen oder die Dateien aus `MeteoSchweizHagelradar/helper/` kopieren:
+Die Befehle in diesem Schritt per SSH direkt auf dem Raspberry Pi ausführen
+(nicht in IP-Symcon). Zwei Wege, um an `meteoswiss_hail_radar.py` zu kommen:
+
+**Option A – ganzes Repository klonen** (empfohlen, dann liegen auch diese
+Anleitung und `config.example.json` lokal vor):
 
 ```bash
+cd /tmp
+git clone https://github.com/mschmidi/meteoswiss-symcon.git
+cd meteoswiss-symcon
+sudo mkdir -p /opt/meteoswiss-hail-radar
 sudo cp MeteoSchweizHagelradar/helper/meteoswiss_hail_radar.py /opt/meteoswiss-hail-radar/
 sudo chown -R meteoswiss-hail:meteoswiss-hail /opt/meteoswiss-hail-radar
 ```
+
+**Option B – nur die eine Datei laden**, ohne das ganze Repository:
+
+```bash
+sudo mkdir -p /opt/meteoswiss-hail-radar
+sudo curl -o /opt/meteoswiss-hail-radar/meteoswiss_hail_radar.py \
+    https://raw.githubusercontent.com/mschmidi/meteoswiss-symcon/main/MeteoSchweizHagelradar/helper/meteoswiss_hail_radar.py
+sudo chown -R meteoswiss-hail:meteoswiss-hail /opt/meteoswiss-hail-radar
+```
+
+Beide Varianten setzen voraus, dass der Systembenutzer `meteoswiss-hail` aus
+Schritt 1 bereits existiert – sonst meldet `chown` "invalid user".
+
+Die folgenden Schritte referenzieren noch zwei weitere Dateien aus dem
+Repository (`config.example.json` in Schritt 4, die systemd-Units in
+Schritt 7). Bei Option A liegen diese bereits im geklonten Ordner vor. Bei
+Option B einzeln nachladen:
+
+```bash
+sudo curl -o /tmp/config.example.json \
+    https://raw.githubusercontent.com/mschmidi/meteoswiss-symcon/main/MeteoSchweizHagelradar/helper/config.example.json
+sudo curl -o /tmp/meteoswiss-hail-radar.service \
+    https://raw.githubusercontent.com/mschmidi/meteoswiss-symcon/main/MeteoSchweizHagelradar/helper/meteoswiss-hail-radar.service
+sudo curl -o /tmp/meteoswiss-hail-radar.timer \
+    https://raw.githubusercontent.com/mschmidi/meteoswiss-symcon/main/MeteoSchweizHagelradar/helper/meteoswiss-hail-radar.timer
+```
+
+(In den Befehlen der folgenden Schritte dann `MeteoSchweizHagelradar/helper/...`
+durch `/tmp/...` ersetzen.)
 
 ## 4. Konfigurationsverzeichnis anlegen
 
