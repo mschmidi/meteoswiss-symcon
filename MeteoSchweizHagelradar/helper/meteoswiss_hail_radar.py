@@ -307,9 +307,22 @@ def run(config_path: str, inspect_param: str | None) -> int:
         status['meshs_valid_time'] = meshs_time.isoformat() if meshs_time else None
 
         month = datetime.datetime.now(datetime.timezone.utc).month
-        status['season_active'] = 4 <= month <= 9
+        season_active = 4 <= month <= 9
+        status['season_active'] = season_active
+
+        # "Kein Asset gefunden" wirft fuer sich genommen keine Exception (siehe
+        # fetch_parameter) - waere hier waehrend der Saison keine Fehlermeldung
+        # gesetzt, wuerde eine erneute Formataenderung der Quelle (wie schon
+        # einmal erlebt) still zu leeren Werten fuehren, ohne dass IP-Symcon das
+        # als Fehler erkennt. Deshalb wird das hier explizit als Fehler gewertet.
+        fehler = []
+        if season_active and poh_time is None:
+            fehler.append('Kein aktuelles POH-Asset gefunden (Datenquelle evtl. geaendert).')
+        if season_active and meshs_time is None:
+            fehler.append('Kein aktuelles MESHS-Asset gefunden (Datenquelle evtl. geaendert).')
+
         status['generated_at'] = now_iso()
-        status['last_error'] = None
+        status['last_error'] = '; '.join(fehler) if fehler else None
     except Exception as exc:  # noqa: BLE001 - Fehler wird bewusst nach status['last_error'] durchgereicht.
         log.exception('Aktualisierung der Hagelradar-Daten fehlgeschlagen')
         status['last_error'] = str(exc)

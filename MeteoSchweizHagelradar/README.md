@@ -32,6 +32,11 @@ Standort und stellt sie als Variablen in IP-Symcon bereit.
    IP-Symcon übernehmen" oder manuell setzen. Schwellenwerte nach Bedarf
    anpassen.
 5. Auf Basis der Variable `HagelGefahr` ein IP-Symcon-Ereignis erstellen.
+   Zusätzlich auf Basis von `SchutzNichtGewaehrleistet` ein Ereignis
+   erstellen, um innerhalb IP-Symcon zu erkennen, wenn die Schnittstelle
+   selbst gestört ist (siehe Variablen-Tabelle unten) – z. B. um es auf
+   einem Dashboard zu visualisieren oder mit eigener Benachrichtigungslogik
+   zu verknüpfen.
 
 Der Standort wird ausschliesslich in IP-Symcon gepflegt: Beim Speichern
 schreibt das Modul Latitude/Longitude selbst in die Konfigurationsdatei des
@@ -43,7 +48,7 @@ Helpers – kein manuelles Datei-Editieren auf dem Host nötig.
 |-------------------------------------|------------------------------------------------------------------------|
 | Latitude / Longitude               | Standort (WGS84), wird an den Helper weitergereicht                   |
 | Aktualisierungsintervall           | Wie oft das Modul die Statusdatei neu einliest                        |
-| Schwellenwert POH                  | Ab wann `HagelGefahr` gesetzt wird (Prozent)                          |
+| Schwellenwert POH                  | Ab wann `HagelGefahr` gesetzt wird (Prozent, Standard 5 %)             |
 | Schwellenwert MESHS                | Ab wann `HagelGefahr` gesetzt wird (Millimeter)                       |
 | Daten gelten als veraltet nach     | Sicherheitsnetz: ab diesem Alter wird `HagelGefahr` nicht mehr gesetzt |
 | Erweitert: Pfad Helper-Konfiguration | Wohin dieses Modul die Standort-Konfiguration für den Helper schreibt |
@@ -51,14 +56,20 @@ Helpers – kein manuelles Datei-Editieren auf dem Host nötig.
 
 ## Variablen
 
-| Ident              | Beschreibung                                                                    |
-|----------------------|-------------------------------------------------------------------------------|
-| `POH`               | Hagelwahrscheinlichkeit am konfigurierten Standort (%)                        |
-| `MESHS`             | Erwartete maximale Hagelkorngrösse am Standort (mm)                            |
-| `HagelGefahr`       | `true`, wenn POH oder MESHS über dem Schwellenwert liegt und Daten aktuell sind |
-| `Datenzeitstempel`  | Zeitpunkt der zugrunde liegenden Radardaten                                    |
-| `SaisonAktiv`       | `true` zwischen April und September (ausserhalb: keine Daten)                  |
-| `LetzterFehler`     | Letzte Fehlermeldung des Helper-Skripts, falls vorhanden                       |
+| Ident                        | Beschreibung                                                                    |
+|-------------------------------|---------------------------------------------------------------------------------|
+| `SchutzNichtGewaehrleistet`  | **`true`, wenn dem System aktuell nicht vertraut werden kann** (Statusdatei nicht lesbar/veraltet, Standort fehlt oder der Helper selbst einen Fehler meldet). Primäres Signal für ein eigenes "Schnittstelle gestört"-Ereignis in IP-Symcon. |
+| `POH`                        | Hagelwahrscheinlichkeit am konfigurierten Standort (%)                          |
+| `MESHS`                      | Erwartete maximale Hagelkorngrösse am Standort (mm)                             |
+| `HagelGefahr`                | `true`, wenn POH oder MESHS über dem Schwellenwert liegt **und** `SchutzNichtGewaehrleistet` `false` ist |
+| `Datenzeitstempel`           | Zeitpunkt der zugrunde liegenden Radardaten                                     |
+| `SaisonAktiv`                | `true` zwischen April und September (ausserhalb: keine Daten)                   |
+| `LetzterFehler`              | Letzte Fehlermeldung des Helper-Skripts, falls vorhanden                        |
+
+`SchutzNichtGewaehrleistet` wird bei jeder Aktualisierung aktiv neu gesetzt
+(auch im Fehlerfall) statt beim letzten bekannten Wert stehen zu bleiben –
+damit friert z. B. `HagelGefahr` nicht unbemerkt auf `false` ein, während die
+Schnittstelle in Wirklichkeit gestört ist.
 
 ## PHP-Befehlsreferenz
 
