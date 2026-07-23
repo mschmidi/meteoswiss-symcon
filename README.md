@@ -117,23 +117,25 @@ keine Datei mehr von Hand editiert werden.
 
 ### Erzeugte Variablen
 
-| Ident              | Beschreibung                                                  |
-|---------------------|------------------------------------------------------------------|
-| `POH`               | Hagelwahrscheinlichkeit am konfigurierten Standort (%)          |
-| `MESHS`             | Erwartete maximale Hagelkorngrösse am Standort (mm)              |
-| `HagelGefahr`       | `true`, wenn POH oder MESHS über dem konfigurierten Schwellenwert liegt und die Daten aktuell sind |
-| `Datenzeitstempel`  | Zeitpunkt der zugrunde liegenden Radardaten                      |
-| `SaisonAktiv`       | `true` zwischen April und September (ausserhalb: keine Daten)    |
-| `LetzterFehler`     | Letzte Fehlermeldung des Helper-Skripts, falls vorhanden          |
+| Ident                        | Beschreibung                                                  |
+|-------------------------------|------------------------------------------------------------------|
+| `SchutzNichtGewaehrleistet`  | `true`, wenn der Schnittstelle aktuell nicht vertraut werden kann (gestört/veraltet/kein Standort) – Basis für ein eigenes "Schnittstelle gestört"-Ereignis |
+| `POH`                        | Hagelwahrscheinlichkeit am konfigurierten Standort (%)          |
+| `MESHS`                      | Erwartete maximale Hagelkorngrösse am Standort (mm)              |
+| `HagelGefahr`                | `true`, wenn POH oder MESHS über dem konfigurierten Schwellenwert liegt und `SchutzNichtGewaehrleistet` `false` ist |
+| `Datenzeitstempel`           | Zeitpunkt der zugrunde liegenden Radardaten                      |
+| `SaisonAktiv`                | `true` zwischen April und September (ausserhalb: keine Daten)    |
+| `LetzterFehler`              | Letzte Fehlermeldung des Helper-Skripts, falls vorhanden          |
 
 ### Konfiguration
 
 - **Latitude/Longitude:** Standort, wird an den Helper weitergereicht (Button
   "Standort aus IP-Symcon übernehmen" oder manuell).
 - **Aktualisierungsintervall:** Wie oft das Modul die Statusdatei neu einliest.
-- **Schwellenwerte POH/MESHS:** Ab wann `HagelGefahr` gesetzt wird.
+- **Schwellenwerte POH/MESHS:** Ab wann `HagelGefahr` gesetzt wird (Standard: POH 5 %).
 - **Max. Alter:** Ab wann Daten als veraltet gelten (z. B. wenn der Helper
-  ausfällt) und `HagelGefahr` sicherheitshalber nicht mehr gesetzt wird.
+  ausfällt) und `HagelGefahr`/`SchutzNichtGewaehrleistet` entsprechend
+  sicherheitshalber gesetzt werden.
 - **Erweitert:** Pfade zur Helper-Konfiguration (wird geschrieben) und zur
   `status.json` (wird gelesen) – nur bei abweichender Installation ändern.
 

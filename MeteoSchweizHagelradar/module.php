@@ -19,7 +19,7 @@ class MeteoSchweizHagelradar extends IPSModule
         $this->RegisterPropertyString('HelperConfigFilePath', self::DEFAULT_HELPER_CONFIG_PATH);
         $this->RegisterPropertyString('StatusFilePath', '/var/lib/meteoswiss-hail-radar/status.json');
         $this->RegisterPropertyInteger('UpdateInterval', 5);
-        $this->RegisterPropertyInteger('POHSchwellenwert', 50);
+        $this->RegisterPropertyInteger('POHSchwellenwert', 5);
         $this->RegisterPropertyFloat('MESHSSchwellenwert', 20.0);
         $this->RegisterPropertyInteger('MaxAlterMinuten', 20);
 
@@ -44,6 +44,11 @@ class MeteoSchweizHagelradar extends IPSModule
         IPS_SetVariableProfileValues('MSHR.Millimeter', 0, 0, 1);
         IPS_SetVariableProfileDigits('MSHR.Millimeter', 1);
 
+        // Primäres Vertrauens-Signal: true = Schutz aktuell NICHT gewährleistet
+        // (Schnittstelle gestört, Daten veraltet oder Standort nicht konfiguriert).
+        // Darauf lässt sich ein eigenes IP-Symcon-Ereignis aufbauen, unabhängig
+        // vom Instanzstatus.
+        $this->RegisterVariableBoolean('SchutzNichtGewaehrleistet', 'Schutz nicht gewährleistet (Schnittstelle gestört)', '~Alert', 5);
         $this->RegisterVariableFloat('POH', 'Hagelwahrscheinlichkeit (POH)', 'MSHR.Prozent', 10);
         $this->RegisterVariableFloat('MESHS', 'Erwartete Hagelkorngrösse (MESHS)', 'MSHR.Millimeter', 20);
         $this->RegisterVariableBoolean('HagelGefahr', 'Hagelgefahr (Schwellenwert überschritten)', '~Alert', 30);
@@ -55,6 +60,8 @@ class MeteoSchweizHagelradar extends IPSModule
         $lon = $this->ReadPropertyFloat('Longitude');
 
         if ($lat === 0.0 && $lon === 0.0) {
+            $this->SetValue('SchutzNichtGewaehrleistet', true);
+            $this->SetValue('HagelGefahr', false);
             $this->SetTimerInterval('UpdateTimer', 0);
             $this->SetStatus(205);
             return;
@@ -64,6 +71,8 @@ class MeteoSchweizHagelradar extends IPSModule
         $this->SetTimerInterval('UpdateTimer', $interval * 60 * 1000);
 
         if (!$this->SchreibeHelperKonfiguration($lat, $lon)) {
+            $this->SetValue('SchutzNichtGewaehrleistet', true);
+            $this->SetValue('HagelGefahr', false);
             $this->SetStatus(206);
         } else {
             $this->SetStatus(102);
@@ -97,6 +106,11 @@ class MeteoSchweizHagelradar extends IPSModule
         $inhalt = @file_get_contents($pfad);
         if ($inhalt === false) {
             $this->LogMessage("MeteoSchweizHagelradar: Statusdatei '$pfad' konnte nicht gelesen werden.", KL_WARNING);
+            // Variablen bewusst aktiv auf "gestört" setzen statt beim letzten
+            // bekannten Wert einzufrieren - sonst bliebe z. B. HagelGefahr auf
+            // dem letzten "false" stehen und würde fälschlich Sicherheit vortäuschen.
+            $this->SetValue('SchutzNichtGewaehrleistet', true);
+            $this->SetValue('HagelGefahr', false);
             $this->SetStatus(202);
             return;
         }
@@ -104,11 +118,14 @@ class MeteoSchweizHagelradar extends IPSModule
         $daten = json_decode($inhalt, true);
         if (!is_array($daten)) {
             $this->LogMessage("MeteoSchweizHagelradar: Statusdatei '$pfad' enthält kein gültiges JSON.", KL_WARNING);
+            $this->SetValue('SchutzNichtGewaehrleistet', true);
+            $this->SetValue('HagelGefahr', false);
             $this->SetStatus(202);
             return;
         }
 
-        $this->SetValue('LetzterFehler', (string) ($daten['last_error'] ?? ''));
+        $letzterFehler = (string) ($daten['last_error'] ?? '');
+        $this->SetValue('LetzterFehler', $letzterFehler);
         $this->SetValue('SaisonAktiv', !empty($daten['season_active']));
 
         $generatedAt = isset($daten['generated_at']) ? strtotime((string) $daten['generated_at']) : false;
@@ -123,14 +140,19 @@ class MeteoSchweizHagelradar extends IPSModule
         $this->SetValue('POH', $poh !== null ? (float) $poh : 0.0);
         $this->SetValue('MESHS', $meshs !== null ? (float) $meshs : 0.0);
 
+        // Vertrauenswürdig nur, wenn der Helper aktuell lief UND selbst keinen
+        // Fehler meldet (z. B. "kein Asset gefunden" bei geänderter Quelle).
+        $schutzNichtGewaehrleistet = !$istAktuell || $letzterFehler !== '';
+        $this->SetValue('SchutzNichtGewaehrleistet', $schutzNichtGewaehrleistet);
+
         $pohSchwelle = $this->ReadPropertyInteger('POHSchwellenwert');
         $meshsSchwelle = $this->ReadPropertyFloat('MESHSSchwellenwert');
 
-        $gefahr = $istAktuell
+        $gefahr = !$schutzNichtGewaehrleistet
             && (($poh !== null && $poh >= $pohSchwelle) || ($meshs !== null && $meshs >= $meshsSchwelle));
         $this->SetValue('HagelGefahr', $gefahr);
 
-        if (!empty($daten['last_error'])) {
+        if ($letzterFehler !== '') {
             $this->SetStatus(204);
         } elseif (!$istAktuell) {
             $this->SetStatus(203);
