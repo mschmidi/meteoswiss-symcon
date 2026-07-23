@@ -30,7 +30,9 @@ erwähnt wird.
 3. Neue Instanz unter dem gewünschten Kategorie-Knoten anlegen und PLZ
    konfigurieren.
 4. Auf Basis der Variable `HagelAktiv` bzw. `Warnstufe` ein IP-Symcon-Ereignis
-   erstellen.
+   erstellen. Zusätzlich auf Basis von `SchutzNichtGewaehrleistet` ein
+   Ereignis erstellen, um innerhalb IP-Symcon zu erkennen, wenn die
+   Schnittstelle selbst gestört ist (siehe Variablen-Tabelle unten).
 
 ## Konfiguration
 
@@ -42,15 +44,32 @@ erwähnt wird.
 
 ## Variablen
 
-| Ident                  | Beschreibung                                                   |
-|--------------------------|-------------------------------------------------------------------|
-| `Warnstufe`             | Aktuelle Gewitter-/Hagel-Warnstufe (0 = keine, 5 = sehr gross)   |
-| `HagelAktiv`            | `true`, wenn aktuell eine (Hagel-)Warnung vorliegt               |
-| `WarnText`              | Warntext von MeteoSchweiz (Klartext)                             |
-| `WarnTextHTML`          | Warntext von MeteoSchweiz (HTML, ausgeblendet)                    |
-| `GueltigVon`/`GueltigBis` | Gültigkeitszeitraum der Warnung                                |
-| `Ausblick`              | `true`, wenn es sich um eine Vorwarnung/Ausblick handelt          |
-| `LetzteAktualisierung`  | Zeitpunkt der letzten erfolgreichen Abfrage                       |
+| Ident                        | Beschreibung                                                   |
+|--------------------------------|-------------------------------------------------------------------|
+| `SchutzNichtGewaehrleistet`  | **`true`, wenn den Warndaten aktuell nicht vertraut werden kann** (Abruf- oder Parse-Fehler, ungültige PLZ). Primäres Signal für ein eigenes "Schnittstelle gestört"-Ereignis. Wird bei jedem Durchlauf aktiv neu gesetzt, friert also nicht auf einem alten Wert ein. |
+| `Warnstufe`                  | Aktuelle Gewitter-/Hagel-Warnstufe (0 = keine, 5 = sehr gross)   |
+| `HagelAktiv`                 | `true`, wenn aktuell eine (Hagel-)Warnung vorliegt **und** `SchutzNichtGewaehrleistet` `false` ist |
+| `WarnText`                   | Warntext von MeteoSchweiz (Klartext)                             |
+| `WarnTextHTML`               | Warntext von MeteoSchweiz (HTML, ausgeblendet)                    |
+| `GueltigVon`/`GueltigBis`    | Gültigkeitszeitraum der Warnung                                |
+| `Ausblick`                   | `true`, wenn es sich um eine Vorwarnung/Ausblick handelt          |
+| `LetzteAktualisierung`       | Zeitpunkt der letzten **erfolgreichen** Abfrage                   |
+| `LetztePruefung`             | Zeitpunkt, an dem **dieses Modul selbst** zuletzt gelaufen ist (auch bei Fehlern) – Watchdog-Basis, siehe unten |
+
+### Watchdog für den Fall, dass der Timer selbst ausfällt
+
+`SchutzNichtGewaehrleistet` erkennt Abruf-/Parse-Fehler der Schnittstelle,
+aber nicht, wenn die Instanz/der Timer dieses Moduls selbst aufhört zu
+laufen – das kann ein Modul grundsätzlich nicht selbst feststellen. Dafür
+eignet sich ein zweites, unabhängiges, zeitgesteuertes IP-Symcon-Ereignis,
+das `LetztePruefung` gegen das Aktualisierungsintervall prüft, z. B.:
+
+```php
+$maxAlterSekunden = 3 * IPS_GetProperty($HAGELWARNUNG_INSTANZ_ID, 'UpdateInterval') * 60;
+if (time() - GetValue(IPS_GetObjectIDByIdent('LetztePruefung', $HAGELWARNUNG_INSTANZ_ID)) > $maxAlterSekunden) {
+    // z. B. eigene Statusvariable/Dashboard-Anzeige auf "gestört" setzen
+}
+```
 
 ## PHP-Befehlsreferenz
 
