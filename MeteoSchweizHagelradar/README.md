@@ -63,6 +63,7 @@ Helpers – kein manuelles Datei-Editieren auf dem Host nötig.
 | `MESHS`                      | Erwartete maximale Hagelkorngrösse am Standort (mm)                             |
 | `HagelGefahr`                | `true`, wenn POH oder MESHS über dem Schwellenwert liegt **und** `SchutzNichtGewaehrleistet` `false` ist |
 | `Datenzeitstempel`           | Zeitpunkt der zugrunde liegenden Radardaten                                     |
+| `LetztePruefung`             | Zeitpunkt, an dem **dieses Modul selbst** zuletzt gelaufen ist – unabhängig davon, ob das Lesen der Statusdatei geklappt hat |
 | `SaisonAktiv`                | `true` zwischen April und September (ausserhalb: keine Daten)                   |
 | `LetzterFehler`              | Letzte Fehlermeldung des Helper-Skripts, falls vorhanden                        |
 
@@ -70,6 +71,31 @@ Helpers – kein manuelles Datei-Editieren auf dem Host nötig.
 (auch im Fehlerfall) statt beim letzten bekannten Wert stehen zu bleiben –
 damit friert z. B. `HagelGefahr` nicht unbemerkt auf `false` ein, während die
 Schnittstelle in Wirklichkeit gestört ist.
+
+### Zwei Ebenen der Überwachung – Beispiel-Ereignisse
+
+`SchutzNichtGewaehrleistet` deckt Störungen der *Datenquelle* ab (Helper-Fehler,
+veraltete Daten, kein Standort). Was ein Modul grundsätzlich **nicht** selbst
+erkennen kann: dass sein eigener Timer/die Instanz aufgehört hat zu laufen –
+dafür bräuchte es einen Watchdog ausserhalb des Moduls. `LetztePruefung`
+liefert dafür die Grundlage. Zwei Ereignisse decken damit beide Fälle ab:
+
+1. **Datenquelle gestört:** Ereignis auf `SchutzNichtGewaehrleistet` →
+   Bedingung "ändert sich auf `true`".
+2. **Modul/Timer selbst gestört (Watchdog):** Ein zeitgesteuertes Ereignis
+   (z. B. alle 30 Minuten), das prüft, ob `LetztePruefung` neuer ist als vor
+   dem 3-fachen des Aktualisierungsintervalls:
+
+   ```php
+   $maxAlterSekunden = 3 * IPS_GetProperty($HAGELRADAR_INSTANZ_ID, 'UpdateInterval') * 60;
+   if (time() - GetValue(IPS_GetObjectIDByIdent('LetztePruefung', $HAGELRADAR_INSTANZ_ID)) > $maxAlterSekunden) {
+       // z. B. eigene Statusvariable/Dashboard-Anzeige auf "gestört" setzen
+   }
+   ```
+
+   Dieses zweite Ereignis läuft bewusst unabhängig vom Hagelradar-Modul selbst
+   (eigener Timer), damit es auch dann noch funktioniert, wenn Letzteres
+   komplett steht.
 
 ## PHP-Befehlsreferenz
 

@@ -124,6 +124,7 @@ keine Datei mehr von Hand editiert werden.
 | `MESHS`                      | Erwartete maximale Hagelkorngrösse am Standort (mm)              |
 | `HagelGefahr`                | `true`, wenn POH oder MESHS über dem konfigurierten Schwellenwert liegt und `SchutzNichtGewaehrleistet` `false` ist |
 | `Datenzeitstempel`           | Zeitpunkt der zugrunde liegenden Radardaten                      |
+| `LetztePruefung`             | Zeitpunkt, an dem das Modul selbst zuletzt gelaufen ist (Watchdog-Basis) |
 | `SaisonAktiv`                | `true` zwischen April und September (ausserhalb: keine Daten)    |
 | `LetzterFehler`              | Letzte Fehlermeldung des Helper-Skripts, falls vorhanden          |
 
