@@ -53,6 +53,14 @@ class MeteoSchweizHagelradar extends IPSModule
         $this->RegisterVariableFloat('MESHS', 'Erwartete Hagelkorngrösse (MESHS)', 'MSHR.Millimeter', 20);
         $this->RegisterVariableBoolean('HagelGefahr', 'Hagelgefahr (Schwellenwert überschritten)', '~Alert', 30);
         $this->RegisterVariableInteger('Datenzeitstempel', 'Zeitstempel der Radardaten', '~UnixTimestamp', 40);
+        // Eigener "Herzschlag" dieses Moduls, unabhängig vom Inhalt der
+        // Statusdatei: wird bei jedem Timer-Durchlauf gesetzt, auch wenn das
+        // Lesen der Datei fehlschlägt. Bleibt dieser Wert stehen, obwohl das
+        // Aktualisierungsintervall längst abgelaufen ist, läuft nicht die
+        // Datenquelle, sondern das Modul/der Timer selbst nicht mehr - das
+        // kann das Modul nicht selbst erkennen, wohl aber ein zweites, davon
+        // unabhängiges IP-Symcon-Ereignis auf Basis dieser Variable.
+        $this->RegisterVariableInteger('LetztePruefung', 'Letzte Prüfung durch dieses Modul', '~UnixTimestamp', 45);
         $this->RegisterVariableBoolean('SaisonAktiv', 'Hagelsaison aktiv (April-September)', '', 50);
         $this->RegisterVariableString('LetzterFehler', 'Letzter Fehler des Helper-Skripts', '', 60);
 
@@ -102,6 +110,10 @@ class MeteoSchweizHagelradar extends IPSModule
 
     public function UpdateWarnung(): void
     {
+        // Unbedingt zuerst setzen - auch wenn alles Folgende fehlschlägt, soll
+        // sichtbar sein, dass dieser Timer-Durchlauf stattgefunden hat.
+        $this->SetValue('LetztePruefung', time());
+
         $pfad = $this->ReadPropertyString('StatusFilePath');
         $inhalt = @file_get_contents($pfad);
         if ($inhalt === false) {

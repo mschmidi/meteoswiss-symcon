@@ -60,15 +60,17 @@ Gewitterwarnung aus und prüft optional, ob im Warntext explizit "Hagel" erwähn
 
 ### Erzeugte Variablen
 
-| Ident                 | Beschreibung                                              |
-|------------------------|-------------------------------------------------------------|
-| `Warnstufe`            | Aktuelle Gewitter-/Hagel-Warnstufe (0 = keine, 5 = sehr gross) |
-| `HagelAktiv`           | `true`, wenn aktuell eine (Hagel-)Warnung vorliegt          |
-| `WarnText`             | Warntext von MeteoSchweiz (Klartext)                        |
-| `WarnTextHTML`         | Warntext von MeteoSchweiz (HTML, ausgeblendet)               |
-| `GueltigVon`/`GueltigBis` | Gültigkeitszeitraum der Warnung                          |
-| `Ausblick`             | `true`, wenn es sich um eine Vorwarnung/Ausblick handelt     |
-| `LetzteAktualisierung` | Zeitpunkt der letzten erfolgreichen Abfrage                  |
+| Ident                       | Beschreibung                                              |
+|-------------------------------|-------------------------------------------------------------|
+| `SchutzNichtGewaehrleistet` | `true`, wenn den Warndaten aktuell nicht vertraut werden kann (Schnittstelle gestört) |
+| `Warnstufe`                 | Aktuelle Gewitter-/Hagel-Warnstufe (0 = keine, 5 = sehr gross) |
+| `HagelAktiv`                | `true`, wenn aktuell eine (Hagel-)Warnung vorliegt          |
+| `WarnText`                  | Warntext von MeteoSchweiz (Klartext)                        |
+| `WarnTextHTML`              | Warntext von MeteoSchweiz (HTML, ausgeblendet)               |
+| `GueltigVon`/`GueltigBis`   | Gültigkeitszeitraum der Warnung                          |
+| `Ausblick`                  | `true`, wenn es sich um eine Vorwarnung/Ausblick handelt     |
+| `LetzteAktualisierung`      | Zeitpunkt der letzten erfolgreichen Abfrage                  |
+| `LetztePruefung`            | Zeitpunkt, an dem das Modul selbst zuletzt gelaufen ist (Watchdog-Basis) |
 
 ### Konfiguration
 
@@ -124,6 +126,7 @@ keine Datei mehr von Hand editiert werden.
 | `MESHS`                      | Erwartete maximale Hagelkorngrösse am Standort (mm)              |
 | `HagelGefahr`                | `true`, wenn POH oder MESHS über dem konfigurierten Schwellenwert liegt und `SchutzNichtGewaehrleistet` `false` ist |
 | `Datenzeitstempel`           | Zeitpunkt der zugrunde liegenden Radardaten                      |
+| `LetztePruefung`             | Zeitpunkt, an dem das Modul selbst zuletzt gelaufen ist (Watchdog-Basis) |
 | `SaisonAktiv`                | `true` zwischen April und September (ausserhalb: keine Daten)    |
 | `LetzterFehler`              | Letzte Fehlermeldung des Helper-Skripts, falls vorhanden          |
 

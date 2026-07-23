@@ -331,6 +331,30 @@ def run(config_path: str, inspect_param: str | None) -> int:
     return 0 if status.get('last_error') is None else 1
 
 
+def write_fallback_error(config_path: str, message: str) -> None:
+    """Letzte Verteidigungslinie: selbst wenn config.json nicht lesbar ist,
+    soll IP-Symcon trotzdem einen Fehler sehen statt nur eine stehenbleibende
+    status.json. Ohne gueltige Konfiguration ist der Zielpfad nicht bekannt,
+    daher Best-Effort-Versuch ueber den Standardpfad bzw. das, was sich noch
+    aus der Konfigurationsdatei auslesen laesst.
+    """
+    output_path = DEFAULT_OUTPUT_PATH
+    try:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            partial_config = json.load(f)
+        output_path = partial_config.get('output_path', DEFAULT_OUTPUT_PATH)
+    except Exception:
+        pass
+
+    try:
+        status = load_existing_status(output_path)
+        status['last_checked_at'] = now_iso()
+        status['last_error'] = message
+        write_status(output_path, status)
+    except Exception:
+        log.exception('Konnte nicht einmal einen Fehlerstatus schreiben')
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description='MeteoSchweiz Hagelradar-Helper (POH/MESHS) fuer IP-Symcon.')
     parser.add_argument('--config', default=DEFAULT_CONFIG_PATH, help=f'Pfad zur config.json (Default: {DEFAULT_CONFIG_PATH})')
@@ -351,6 +375,11 @@ def main() -> int:
         return run(args.config, args.inspect)
     except HailRadarError as exc:
         log.error(str(exc))
+        write_fallback_error(args.config, str(exc))
+        return 1
+    except Exception as exc:  # noqa: BLE001 - letzte Verteidigungslinie, siehe write_fallback_error().
+        log.exception('Unerwarteter Fehler')
+        write_fallback_error(args.config, str(exc))
         return 1
 
 

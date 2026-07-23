@@ -35,6 +35,11 @@ class MeteoSchweizHagelwarnung extends IPSModule
         IPS_SetVariableProfileAssociation('MSH.Warnstufe', 4, 'Gross', '', 0xF44336);
         IPS_SetVariableProfileAssociation('MSH.Warnstufe', 5, 'Sehr gross', '', 0x9C27B0);
 
+        // Primäres Vertrauens-Signal: true = auf die Warndaten ist gerade kein
+        // Verlass (Abruf-/Parse-Fehler, ungültige PLZ). Analog zum gleichnamigen
+        // Signal in MeteoSchweizHagelradar, damit sich in IP-Symcon ein
+        // einheitliches "Schnittstelle gestört"-Ereignis bauen lässt.
+        $this->RegisterVariableBoolean('SchutzNichtGewaehrleistet', 'Schutz nicht gewährleistet (Schnittstelle gestört)', '~Alert', 5);
         $this->RegisterVariableInteger('Warnstufe', 'Warnstufe (Gewitter/Hagel)', 'MSH.Warnstufe', 10);
         $this->RegisterVariableBoolean('HagelAktiv', 'Hagelwarnung aktiv', '~Alert', 20);
         $this->RegisterVariableString('WarnText', 'Warntext', '', 30);
@@ -42,12 +47,16 @@ class MeteoSchweizHagelwarnung extends IPSModule
         $this->RegisterVariableInteger('GueltigVon', 'Gültig von', '~UnixTimestamp', 50);
         $this->RegisterVariableInteger('GueltigBis', 'Gültig bis', '~UnixTimestamp', 60);
         $this->RegisterVariableBoolean('Ausblick', 'Ausblick (Vorwarnung)', '', 70);
-        $this->RegisterVariableInteger('LetzteAktualisierung', 'Letzte Aktualisierung', '~UnixTimestamp', 80);
+        $this->RegisterVariableInteger('LetzteAktualisierung', 'Letzte erfolgreiche Aktualisierung', '~UnixTimestamp', 80);
+        // Eigener Herzschlag, unabhängig vom Ergebnis - siehe UpdateWarnung().
+        $this->RegisterVariableInteger('LetztePruefung', 'Letzte Prüfung durch dieses Modul', '~UnixTimestamp', 85);
 
         IPS_SetHidden($this->GetIDForIdent('WarnTextHTML'), true);
 
         $plz = $this->ReadPropertyInteger('PLZ');
         if ($plz < 1000 || $plz > 9999) {
+            $this->SetValue('SchutzNichtGewaehrleistet', true);
+            $this->SetValue('HagelAktiv', false);
             $this->SetTimerInterval('UpdateTimer', 0);
             $this->SetStatus(201);
             return;
@@ -64,16 +73,31 @@ class MeteoSchweizHagelwarnung extends IPSModule
 
     public function UpdateWarnung(): void
     {
+        // Unbedingt zuerst setzen - auch wenn alles Folgende fehlschlägt, soll
+        // sichtbar sein, dass dieser Timer-Durchlauf stattgefunden hat (Basis
+        // für ein eigenes Watchdog-Ereignis, falls der Timer selbst ausfällt).
+        $this->SetValue('LetztePruefung', time());
+
         $plz = $this->ReadPropertyInteger('PLZ');
         if ($plz < 1000 || $plz > 9999) {
+            $this->SetValue('SchutzNichtGewaehrleistet', true);
+            $this->SetValue('HagelAktiv', false);
             $this->SetStatus(201);
             return;
         }
 
         $warnings = $this->FetchWarnings($plz);
         if ($warnings === null) {
+            // FetchWarnings() hat Status/Logmeldung bereits gesetzt. Variablen
+            // aktiv auf "gestört" setzen statt beim letzten Wert einzufrieren -
+            // sonst könnte HagelAktiv fälschlich auf "false" stehen bleiben,
+            // während in Wirklichkeit nur die Schnittstelle ausgefallen ist.
+            $this->SetValue('SchutzNichtGewaehrleistet', true);
+            $this->SetValue('HagelAktiv', false);
             return;
         }
+
+        $this->SetValue('SchutzNichtGewaehrleistet', false);
 
         $gewitterWarnungen = array_values(array_filter($warnings, function ($warnung) {
             return isset($warnung['warnType']) && (int) $warnung['warnType'] === self::WARNTYP_GEWITTER
